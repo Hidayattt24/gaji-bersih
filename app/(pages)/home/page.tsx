@@ -8,6 +8,7 @@ import GradientCard from "@/app/components/GradientCard";
 import DocumentItem from "@/app/components/DocumentItem";
 import HorizontalNavbar from "@/app/components/HorizontalNavbar";
 import { supabase } from "@/lib/supabase/client";
+import { DEMO_MODE, demoService } from "@/lib/demo";
 
 
  interface UserProfile {
@@ -23,6 +24,10 @@ export default function HomePage() {
  
 
    const fetchUserProfile = async () => {
+      if (DEMO_MODE) {
+        const profile = demoService.getProfile();
+        return { full_name: profile.full_name, avatar_path: profile.avatar_path };
+      }
       const {
         data: { user },
       } = await supabase.auth.getUser();

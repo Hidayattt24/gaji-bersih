@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase/client";
+import { DEMO_MODE, demoService } from "@/lib/demo";
 
 interface NavItem {
   name: string;
@@ -71,6 +72,10 @@ export default function HorizontalNavbar() {
   const [data, setData] = useState<UserProfile | null>(null);
 
   const fetchUserProfile = async () => {
+    if (DEMO_MODE) {
+      const profile = demoService.getProfile();
+      return { full_name: profile.full_name, avatar_path: profile.avatar_path };
+    }
     const {
       data: { user },
     } = await supabase.auth.getUser();

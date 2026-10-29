@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import HorizontalNavbar from "@/app/components/HorizontalNavbar";
 import { supabase } from "@/lib/supabase/client";
+import { DEMO_MODE, demoService } from "@/lib/demo";
 
 interface UserProfile {
   full_name: string | null;
@@ -14,6 +15,11 @@ interface UserProfile {
 
 export default function SettingsPage() {
   const router = useRouter();
+
+  const handleLogout = () => {
+    if (DEMO_MODE) demoService.signOut();
+    router.push("/auth");
+  };
 
   const [data, setData] = useState<UserProfile | null>(null);
   const settingsCards = [
@@ -112,6 +118,10 @@ export default function SettingsPage() {
   ];
 
  const fetchUserProfile = async () => {
+     if (DEMO_MODE) {
+       const profile = demoService.getProfile();
+       return { full_name: profile.full_name, avatar_path: profile.avatar_path, email: profile.email };
+     }
      const {
        data: { user },
      } = await supabase.auth.getUser();
@@ -280,7 +290,7 @@ export default function SettingsPage() {
 
             {/* Logout Button */}
             <button
-              onClick={() => router.push("/auth")}
+              onClick={handleLogout}
               className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold py-4 rounded-2xl hover:opacity-90 transition-all active:scale-98 mb-5"
               style={{
                 fontFamily: "Poppins, sans-serif",
@@ -493,7 +503,7 @@ export default function SettingsPage() {
                     </p>
                   </div>
                   <button
-                    onClick={() => router.push("/auth")}
+                    onClick={handleLogout}
                     className="bg-gradient-to-r from-red-500 to-red-600 text-white px-8 py-3 rounded-xl hover:opacity-90 transition-all font-semibold flex items-center gap-2"
                     style={{ fontFamily: "Poppins, sans-serif" }}
                   >

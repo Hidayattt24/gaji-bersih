@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import HorizontalNavbar from "@/app/components/HorizontalNavbar";
 import { createClient } from "@/lib/supabase/client";
-import { da } from "zod/locales";
+import { DEMO_MODE, demoService } from "@/lib/demo";
 interface UserProfile {
   full_name: string | null;
   avatar_path: string | null;
@@ -50,6 +50,13 @@ export default function ProfilePage() {
 
   const loadProfile = async () => {
     try {
+      if (DEMO_MODE) {
+        const profile = demoService.getProfile();
+        setData(profile);
+        setFormData({ full_name: profile.full_name, email: profile.email });
+        setAvatarPreview(profile.avatar_path || "/dummy/dummyProfil.png");
+        return;
+      }
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -118,6 +125,19 @@ export default function ProfilePage() {
     setMessage(null);
 
     try {
+      if (DEMO_MODE) {
+        const avatarPath = avatarPreview || "/dummy/dummyProfil.png";
+        const profile = demoService.updateProfile({
+          full_name: formData.full_name,
+          email: formData.email,
+          avatar_path: avatarPath,
+        });
+        setData(profile);
+        setMessage({ type: "success", text: "Profil demo berhasil diperbarui!" });
+        setIsEditing(false);
+        setAvatarFile(null);
+        return;
+      }
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -188,6 +208,12 @@ export default function ProfilePage() {
     setMessage(null);
 
     try {
+      if (DEMO_MODE) {
+        await new Promise((resolve) => setTimeout(resolve, 350));
+        setMessage({ type: "success", text: "Password demo berhasil diubah!" });
+        setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+        return;
+      }
       const { error } = await supabase.auth.updateUser({
         password: passwordData.newPassword,
       });

@@ -1,14 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import HorizontalNavbar from "@/app/components/HorizontalNavbar";
+import { DEMO_KEYS, DEMO_MODE } from "@/lib/demo";
 
 export default function PrivacyPage() {
   const router = useRouter();
   const [dataCollection, setDataCollection] = useState(true);
   const [analytics, setAnalytics] = useState(true);
   const [marketing, setMarketing] = useState(false);
+  const [privacyLoaded, setPrivacyLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!DEMO_MODE) return;
+    try {
+      const stored = localStorage.getItem(DEMO_KEYS.privacy);
+      if (stored) {
+        const value = JSON.parse(stored);
+        setDataCollection(value.dataCollection ?? true);
+        setAnalytics(value.analytics ?? true);
+        setMarketing(value.marketing ?? false);
+      }
+    } catch {
+      // Keep the defaults when local demo data is invalid.
+    } finally {
+      setPrivacyLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!DEMO_MODE || !privacyLoaded) return;
+    localStorage.setItem(
+      DEMO_KEYS.privacy,
+      JSON.stringify({ dataCollection, analytics, marketing })
+    );
+  }, [analytics, dataCollection, marketing, privacyLoaded]);
 
   return (
     <>

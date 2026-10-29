@@ -6,6 +6,7 @@ import SegmentedControl from "@/app/components/SegmentedControl";
 import SkeletonLoader from "@/app/components/SkeletonLoader";
 import { useToast } from "@/app/components/ToastProvider";
 import { supabase } from "@/lib/supabase/client";
+import { DEMO_MODE, demoService } from "@/lib/demo";
 
 export default function AuthenticationPage() {
   const router = useRouter();
@@ -106,6 +107,13 @@ export default function AuthenticationPage() {
 
     try {
       setLoginLoading(true);
+      if (DEMO_MODE) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        demoService.signIn(loginData.email);
+        toast.success("Login demo berhasil! Mengalihkan ke halaman utama...");
+        router.push("/home");
+        return;
+      }
       const res = await fetch("/api/auth/signin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -183,6 +191,19 @@ export default function AuthenticationPage() {
 
     try {
       setRegisterLoading(true);
+      if (DEMO_MODE) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        demoService.signUp({
+          full_name: formData.fullName,
+          username: formData.username || "pengguna_demo",
+          email: formData.email,
+          location: formData.location || "Indonesia",
+          avatar_path: photoPreview || "/dummy/dummyProfil.png",
+        });
+        toast.success("Pendaftaran demo berhasil! Selamat datang di GajiBersih");
+        router.push("/home");
+        return;
+      }
       // 1) Sign up via API
       const res = await fetch("/api/auth/signup", {
         method: "POST",

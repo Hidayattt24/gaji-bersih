@@ -69,6 +69,7 @@ OPENAI_VECTOR_STORE_BIG_ID=your_big_vector_store_id
 
 # App Configuration
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_DEMO_MODE=true
 ```
 
 4. **Setup Database**

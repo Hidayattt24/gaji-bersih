@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import confetti from "canvas-confetti";
 import type { AnalysisMarkdownResult } from "@/lib/openai/types";
+import { DEMO_MODE, demoService } from "@/lib/demo";
 
 type ChatMessageItem = {
   id: string;
@@ -192,6 +193,19 @@ export default function ScanningPage() {
         : trimmed;
 
     try {
+      if (DEMO_MODE) {
+        await new Promise((resolve) => setTimeout(resolve, 350));
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            id: `assistant-${Date.now()}`,
+            role: "assistant",
+            content: demoService.answerChat(trimmed),
+            createdAt: new Date().toISOString(),
+          },
+        ]);
+        return;
+      }
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
@@ -306,6 +320,17 @@ export default function ScanningPage() {
       setAnalysisError(null);
 
       try {
+        if (DEMO_MODE) {
+          await new Promise((resolve) => setTimeout(resolve, 1800));
+          const data = demoService.completeAnalysis(
+            localStorage.getItem("uploadedFileName") || "Kontrak_Kerja_Demo.pdf",
+            analysisType
+          );
+          if (!isMountedRef.current || activeRequestKeyRef.current !== requestKey) return;
+          setAnalysisResult(data);
+          setMarkdownResult(data.markdown_content);
+          return;
+        }
         const response = await fetch("/api/analyze-alternative", {
           method: "POST",
           headers: {

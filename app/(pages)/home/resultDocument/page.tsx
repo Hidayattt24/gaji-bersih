@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 
 import type { AnalysisMarkdownResult } from "@/lib/openai/types";
+import { DEMO_MODE, demoService, makeDemoAnalysis } from "@/lib/demo";
 
 type ChatMessageItem = {
   id: string;
@@ -67,6 +68,15 @@ export default function ResultDocumentPage() {
     try {
       const cached = localStorage.getItem("latestAnalysisResult");
       if (!cached) {
+        if (DEMO_MODE) {
+          const demo = makeDemoAnalysis();
+          localStorage.setItem("latestAnalysisResult", JSON.stringify(demo));
+          setAnalysisResult(demo);
+          setMarkdownResult(demo.markdown_content);
+          setResolvedChatId(demo.chat_id);
+          setLoading(false);
+          return;
+        }
         setError(
           "Hasil analisis terbaru tidak ditemukan. Silakan ulangi proses analisis."
         );
@@ -174,6 +184,19 @@ export default function ResultDocumentPage() {
     });
 
     try {
+      if (DEMO_MODE) {
+        await new Promise((resolve) => setTimeout(resolve, 350));
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            id: `assistant-${Date.now()}`,
+            role: "assistant",
+            content: demoService.answerChat(trimmed),
+            createdAt: new Date().toISOString(),
+          },
+        ]);
+        return;
+      }
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: {

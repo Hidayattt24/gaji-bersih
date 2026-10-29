@@ -17,8 +17,8 @@ export function createClient() {
   }
 
   client = createBrowserClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://demo.invalid',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'demo-anon-key'
   )
 
   return client

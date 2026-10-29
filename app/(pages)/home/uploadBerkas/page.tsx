@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { DEMO_MODE, demoService } from "@/lib/demo";
 
 export default function UploadBerkasPage() {
   const router = useRouter();
@@ -100,6 +101,20 @@ export default function UploadBerkasPage() {
       localStorage.setItem("analysisType", analysisType);
 
       try {
+        if (DEMO_MODE) {
+          const { chatId, documentId } = demoService.startAnalysis(
+            selectedFile.name,
+            analysisType
+          );
+          await new Promise((resolve) => setTimeout(resolve, 450));
+          const params = new URLSearchParams({
+            chat_id: chatId,
+            document_id: documentId,
+            analysis_type: analysisType,
+          });
+          router.push(`/home/scanning?${params.toString()}`);
+          return;
+        }
         const existingChatId = localStorage.getItem("analysisChatId");
         if (existingChatId) {
           await fetch("/api/chat/end", {
